@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 # Create your models here.
 class Fingerprint(models.Model):
@@ -25,3 +26,12 @@ class Session(models.Model):
     
     def __Fingerprint__(self):
         return self.user  
+
+class Heatmap(models.Model):
+    user = models.ForeignKey(Fingerprint, on_delete=models.CASCADE)
+    url = models.ForeignKey(Link, on_delete=models.CASCADE)
+    x_axis = ArrayField(models.IntegerField(null=True, blank=True), null=True, blank=True)
+    y_axis = ArrayField(models.IntegerField(null=True, blank=True), null=True, blank=True)
+
+    def __Link__(self):
+        return self.url

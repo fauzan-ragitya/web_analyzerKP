@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from .models import Fingerprint, Link, Session
+from django.shortcuts import render , get_object_or_404
+from .models import Fingerprint, Link, Session , Heatmap
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.views.generic import View 
@@ -9,6 +9,13 @@ from sqlalchemy import create_engine
 
 
 # Create your views here.
+def visualize(request, heatmap_id):
+    hm = get_object_or_404(Heatmap, pk=heatmap_id)
+    hm_x = hm.x_axis
+    hm_y = hm.y_axis
+    return render(request, 'webanalyzer/indexHM.html', {'x_axis': hm_x, 'y_axis': hm_y})
+
+
 def collect(request):
     if request.method == 'GET':
         return render(request, 'webanalyzer/index.html')
@@ -21,6 +28,7 @@ def collect(request):
             OS = request.POST.get('OS')
             isMobile = request.POST.get('mobile')
             language = request.POST.get('language')
+            # timezone = request.POST.get('timezone')
 
             if isMobile == 'true':
                 isMobile = True
@@ -30,14 +38,14 @@ def collect(request):
             # Check if the digital fingerprint already stored in database
             if not Fingerprint.objects.filter(digital_fingerprint=fingerprint, browser=browser, operating_system=OS, mobile=isMobile, language=language).exists():
                 # Save digital fingerprint to database
-                df = Fingerprint(digital_fingerprint=fingerprint, browser=browser, operating_system=OS, mobile=isMobile, language=language)
+                df = Fingerprint(digital_fingerprint=fingerprint, browser=browser,
+                                 operating_system=OS, mobile=isMobile, language=language)
                 df.save()
                 # Get the fingerprint id for session table
                 print("Fingerprint stored")
             else:
                 df = Fingerprint.objects.get(digital_fingerprint=fingerprint)
                 print("Fingerprint already stored")
-            
 
             # Save data to session table in database
             this_session = Session(user=df, url=current_url)
@@ -48,7 +56,12 @@ def collect(request):
             for this_session in sessions:
                 if this_session.time_in == this_session.time_out:
                     this_session.save()
-            
+            hm_x = request.POST.getlist('heatmapX[]')
+            hm_y = request.POST.getlist('heatmapY[]')
+            print(hm_x, hm_y)
+            hm = Heatmap(user=df, url=current_url, x_axis=hm_x, y_axis=hm_y)
+            hm.save()
+
         # Return response
         return HttpResponse(status=200)
 

@@ -43,6 +43,7 @@ def collect(request):
                 df.save()
                 # Get the fingerprint id for session table
                 print("Fingerprint stored")
+                
             else:
                 df = Fingerprint.objects.get(digital_fingerprint=fingerprint)
                 print("Fingerprint already stored")
@@ -124,4 +125,35 @@ def session_average_analisis(request):
     return render(request, 'webanalyzer/session_analisis.html',{
         "labels" : labels , 
         "data" : data ,
+    })
+
+def session_daily_analisis(request):
+    ##Read the database
+    df = database_to_df('webanalyzer_session')
+
+    ## Processing the data
+    df['days_in'] = df['time_in'].apply(lambda x: x.day)
+    mins = min(df['days_in'])
+    maks = max(df['days_in'])
+
+    data_dict ={}
+
+    for i in range(mins,maks+1):
+        data_dict[i] = len(df[df['days_in'] == i])
+    
+    # labels = []
+    # for el in data_dict.keys():
+    #     try:
+    #         x = str(df[df['days_in']==el]['time_in'][0].date())
+    #     except:
+            
+    #     labels.append(x)
+
+    
+    labels = list(data_dict.keys())
+    data = list(data_dict.values())
+
+    return render(request, 'webanalyzer/session_daily_analisis.html' , {
+        'labels' : labels , 
+        'data' : data,
     })

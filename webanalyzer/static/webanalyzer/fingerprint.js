@@ -133,26 +133,26 @@ hm.onclick = function( ev ) {
     console.log(y)
 };
 
-window.addEventListener('beforeunload', function (e) { 
-   $.ajax({
-  // points to the url where your data will be posted
-  url:'',
-  // post for security reason
-  type: "POST",
-  // data that you will like to return 
-  data: {
-    csrfmiddlewaretoken: csrftoken,
-    fingerprint: fingerprint, 
-    heatmapX: x,
-    heatmapY: y,
-    state: "out"
-  },  
-  // what to do when the call is success 
-  success:function(response){},
-  // what to do when the call is complete ( you can right your clean from code here)
-  complete:function(){},
-  // what to do when there is an error
-  error:function (xhr, textStatus, thrownError){}
+window.onunload = window.onbeforeunload = function () {
+  $.ajax({
+    // points to the url where your data will be posted
+    url: "",
+    // post for security reason
+    type: "POST",
+    // data that you will like to return
+    data: {
+      csrfmiddlewaretoken: csrftoken,
+      fingerprint: fingerprint,
+      heatmapX: x,
+      heatmapY: y,
+      state: "out",
+    },
+    // what to do when the call is success
+    success: function (response) {},
+    // what to do when the call is complete ( you can right your clean from code here)
+    complete: function () {},
+    // what to do when there is an error
+    error: function (xhr, textStatus, thrownError) {},
   });
-}); 
+};
 
